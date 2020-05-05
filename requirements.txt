@@ -6,3 +6,5 @@ pyaes
 pyscrypt
 pytz
 pytest
+pysrt
+translate

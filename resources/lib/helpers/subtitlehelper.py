@@ -12,6 +12,9 @@ from resources.lib.helpers.jsonhelper import JsonHelper
 from resources.lib.helpers.htmlentityhelper import HtmlEntityHelper
 from resources.lib.helpers.encodinghelper import EncodingHelper
 
+import pysrt
+from translate import Translator
+
 
 class SubtitleHelper(object):
     """Helper class that is used for handling subtitle files."""
@@ -121,6 +124,12 @@ class SubtitleHelper(object):
 
             with io.open(local_complete_path, 'w', encoding="utf-8") as f:
                 f.write(srt)
+
+            translations = {
+                'en': SubtitleHelper.__translate_to_language(srt, 'en',
+                                                             local_complete_path)
+            }
+
 
             Logger.info("Saved SRT as %s", local_complete_path)
             return local_complete_path
@@ -453,3 +462,16 @@ class SubtitleHelper(object):
             raise NotImplementedError(error)
 
         return srt
+
+    @staticmethod
+    def __translate_to_language(srt, target_lang, output_file):
+        translator = Translator(from_lang="nl", to_lang="en", email='tpvhatlbkugkfvwwll@awdrt.com')
+        parsed_srt = pysrt.from_string(srt)
+        texts = [chunk.text_without_tags for chunk in parsed_srt]
+
+        translated_texts = map(translator.translate, texts)
+
+        for chunk, translated_text in zip(parsed_srt, translated_texts):
+            chunk.text = translated_text
+
+        parsed_srt.save(output_file)
